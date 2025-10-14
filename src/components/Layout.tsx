@@ -10,15 +10,15 @@ interface LayoutProps {
 export const Layout = ({ children }: LayoutProps) => {
   const location = useLocation();
   const { currentUser, logout } = useStore();
-  
+
   const navItems = [
     { path: '/', label: 'Dashboard', icon: LayoutDashboard },
-    { path: '/users', label: 'Usuários', icon: Users },
+
     { path: '/groups', label: 'Grupos', icon: Wallet },
   ];
-  
+
   const isActive = (path: string) => location.pathname === path;
-  
+
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b bg-card">
@@ -30,7 +30,7 @@ export const Layout = ({ children }: LayoutProps) => {
               </div>
               <h1 className="text-xl font-bold text-foreground">SplitMoney</h1>
             </Link>
-            
+
             <nav className="flex items-center gap-2">
               {navItems.map((item) => {
                 const Icon = item.icon;
@@ -48,17 +48,17 @@ export const Layout = ({ children }: LayoutProps) => {
                 );
               })}
             </nav>
-            
+
             <div className="flex items-center gap-4">
               {currentUser ? (
                 <>
-                 <Link to="/profile">
-                 <Button variant= "outline" className="gap-3 p-5">
-                  <div className="text-sm">
-                    <p className="font-medium text-foreground">{currentUser.name}</p>
-                    <p className="text-muted-foreground text-xs">{currentUser.email}</p>
-                  </div>
-                  </Button>
+                  <Link to="/profile">
+                    <Button variant="outline" className="gap-3 p-5">
+                      <div className="text-sm">
+                        <p className="font-medium text-foreground">{currentUser.name}</p>
+                        <p className="text-muted-foreground text-xs">{currentUser.email}</p>
+                      </div>
+                    </Button>
                   </Link>
                   <Button
                     variant="outline"
@@ -81,7 +81,7 @@ export const Layout = ({ children }: LayoutProps) => {
           </div>
         </div>
       </header>
-      
+
       <main className="container mx-auto px-4 py-8">
         {children}
       </main>
