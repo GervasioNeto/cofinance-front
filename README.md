@@ -1,4 +1,4 @@
-# SplitMoney - Sistema de Controle de Gastos em Grupo
+# Poupix - Sistema de Controle de Gastos em Grupo
 
 Sistema moderno e intuitivo para gerenciar despesas compartilhadas e transações em grupo, desenvolvido com React + TypeScript.
 

@@ -74,7 +74,7 @@ const Login = () => {
           <div className="w-16 h-16 bg-gradient-primary rounded-2xl flex items-center justify-center mx-auto mb-4">
             <Wallet className="w-10 h-10 text-primary-foreground" />
           </div>
-          <CardTitle className="text-2xl">SplitMoney</CardTitle>
+          <CardTitle className="text-2xl">Poupix</CardTitle>
           <CardDescription>
             Sistema de controle de gastos em grupo
           </CardDescription>
