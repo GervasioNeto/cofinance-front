@@ -13,7 +13,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { api } from '@/services/api';
 import { UserDTO, TransactionDTO } from '@/types';
 import { toast } from 'sonner';
-import { Plus, Users, Trash2, Edit, ArrowLeft, UserPlus, TrendingUp, TrendingDown } from 'lucide-react';
+import { Plus, Users, Trash2, Edit, ArrowLeft, UserPlus, TrendingUp, TrendingDown, Copy } from 'lucide-react';
 
 const GroupDetail = () => {
   const { groupId } = useParams();
@@ -265,6 +265,20 @@ const GroupDetail = () => {
               {group.description && (
                 <p className="text-muted-foreground">{group.description}</p>
               )}
+              <div className="text-xs flex items-center gap-1 text-muted-foreground mt-0">
+              <span>{group.uuid}</span>
+                  <button 
+                       onClick={(e) => {
+                        e.stopPropagation(); // para o evento não subir para o card
+                        navigator.clipboard.writeText(group.uuid);
+                        toast.success('Identificador do grupo copiado!');
+                      }}
+                    className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                    title="Copiar UUID"
+                  >
+                    <Copy className="w-4 h-4" />
+                  </button>
+              </div>
             </div>
           </div>
           

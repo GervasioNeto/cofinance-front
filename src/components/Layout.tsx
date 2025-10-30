@@ -28,7 +28,7 @@ export const Layout = ({ children }: LayoutProps) => {
               <div className="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
                 <Wallet className="w-6 h-6 text-primary-foreground" />
               </div>
-              <h1 className="text-xl font-bold text-foreground">SplitMoney</h1>
+              <h1 className="text-xl font-bold text-foreground">Poupix</h1>
             </Link>
 
             <nav className="flex items-center gap-2">
