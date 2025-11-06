@@ -43,7 +43,7 @@ const GroupDetail = () => {
   // Form states
   const [editName, setEditName] = useState('');
   const [editDescription, setEditDescription] = useState('');
-  const [selectedUserId, setSelectedUserId] = useState('');
+  const [selectedUserEmail, setSelectedUserEmail] = useState('');
   const [transactionDescription, setTransactionDescription] = useState('');
   const [transactionAmount, setTransactionAmount] = useState('');
   const [transactionType, setTransactionType] = useState<'expense' | 'income'>('expense');
@@ -127,13 +127,13 @@ const GroupDetail = () => {
   };
   
   const handleAddUser = async () => {
-    if (!groupId || !selectedUserId) return;
+    if (!groupId || !selectedUserEmail) return;
     
     try {
-      await api.groups.addUserToGroup(groupId, selectedUserId);
+      await api.groups.addUserToGroupByEmail(groupId, selectedUserEmail);
       toast.success('Usuário adicionado ao grupo!');
       setIsAddUserDialogOpen(false);
-      setSelectedUserId('');
+      setSelectedUserEmail('');
       loadGroupData();
     } catch (error) {
       toast.error('Erro ao adicionar usuário');
@@ -413,25 +413,22 @@ const GroupDetail = () => {
                   </DialogHeader>
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <Label>Selecione um usuário</Label>
-                      <Select value={selectedUserId} onValueChange={setSelectedUserId}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Escolha um usuário" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {availableUsers.map((user) => (
-                            <SelectItem key={user.id} value={user.id}>
-                              {user.name} ({user.email})
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <div className="space-y-2">
+                        <Label>E-mail do usuário</Label>
+                        <Input
+                          type="email"
+                          placeholder="Ex: usuario@email.com"
+                          value={selectedUserEmail}
+                          onChange={(e) => setSelectedUserEmail(e.target.value)}
+                          required
+                        />
+                      </div>
                     </div>
                     
                     <Button 
                       onClick={handleAddUser} 
                       className="w-full"
-                      disabled={!selectedUserId}
+                      disabled={!selectedUserEmail}
                     >
                       Adicionar
                     </Button>
