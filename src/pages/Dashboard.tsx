@@ -11,8 +11,11 @@ import { toast } from 'sonner';
 const Dashboard = () => {
   const navigate = useNavigate();
   const { currentUser, groups, setGroups, transactions, setTransactions } = useStore();
+  const userGroups = currentUser?.groups || [];
   const [loading, setLoading] = useState(true);
   console.log(useStore.getState());
+  console.log('Current User:', currentUser);
+  console.log('User Groups:', userGroups);
   
   useEffect(() => {
     if (!currentUser) {
@@ -78,7 +81,7 @@ const Dashboard = () => {
               <Wallet className="w-4 h-4 text-primary" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{groups.length}</div>
+              <div className="text-2xl font-bold">{userGroups.length}</div>
               <Button
                 variant="link"
                 className="p-0 h-auto text-xs"

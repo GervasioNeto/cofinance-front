@@ -32,7 +32,8 @@ const Groups = () => {
   
   const loadGroups = async () => {
     try {
-      const data = await api.groups.getAll();
+    //  const data = await api.groups.getAll();
+      const data = await api.users.getUserGroups(String(currentUser?.id));
       setGroups(data);
     } catch (error) {
       toast.error('Erro ao carregar grupos');
