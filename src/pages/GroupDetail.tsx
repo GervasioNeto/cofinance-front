@@ -139,6 +139,27 @@ const GroupDetail = () => {
       toast.error('Erro ao adicionar usuário');
     }
   };
+
+  const handleRemoveUser = async (userId: string) => {
+      if (!groupId) return;
+        if (users.length <= 1) {
+        toast.error("Esse é o último usuário do grupo. Para removê-lo, exclua o grupo.");
+        return;
+      }
+
+      if (users.length <= 1) {
+        toast.error("O grupo deve ter pelo menos um usuário.");
+        return;
+      }
+
+      try {
+        await api.groups.removeUserFromGroup(groupId, userId);
+        toast.success("Usuário removido do grupo!");
+        loadGroupData(); // recarrega os usuários após remover
+      } catch (error) {
+        toast.error("Erro ao remover usuário");
+      }
+  };
   
   const handleCreateTransaction = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -419,11 +440,56 @@ const GroupDetail = () => {
                           <SelectValue placeholder="Escolha um usuário" />
                         </SelectTrigger>
                         <SelectContent>
-                          {availableUsers.map((user) => (
-                            <SelectItem key={user.id} value={user.id}>
-                              {user.name} ({user.email})
-                            </SelectItem>
-                          ))}
+                          {users.map((user) => (
+                        <div
+                          key={user.id}
+                          className="flex items-center gap-3 p-3 border rounded-lg hover:bg-secondary/50 transition-colors"
+                        >
+                          <div
+                            className="flex items-center gap-3 flex-1 cursor-pointer"
+                            onClick={() => navigate(`/users/${user.id}`)}
+                          >
+                            <div className="w-10 h-10 bg-gradient-primary rounded-full flex items-center justify-center">
+                              <Users className="w-5 h-5 text-primary-foreground" />
+                            </div>
+
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium truncate">{user.name}</p>
+                              <p className="text-sm text-muted-foreground truncate">{user.email}</p>
+                            </div>
+                          </div>
+
+                          {/* botão remover */}
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={(e) => e.stopPropagation()} // impede de abrir o perfil ao clicar no lixo
+                              >
+                                <Trash2 className="w-4 h-4 text-destructive" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Remover usuário?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  O usuário será removido permanentemente desse grupo.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => handleRemoveUser(user.id)}
+                                >
+                                  Remover
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
+                      ))}
                         </SelectContent>
                       </Select>
                     </div>
@@ -442,20 +508,50 @@ const GroupDetail = () => {
           </CardHeader>
           <CardContent>
             {users.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {users.map((user) => (
-                  <div
-                    key={user.id}
-                    className="flex items-center gap-3 p-3 border rounded-lg hover:bg-secondary/50 transition-colors cursor-pointer"
-                    onClick={() => navigate(`/users/${user.id}`)}
-                  >
-                    <div className="w-10 h-10 bg-gradient-primary rounded-full flex items-center justify-center">
-                      <Users className="w-5 h-5 text-primary-foreground" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium truncate">{user.name}</p>
-                      <p className="text-sm text-muted-foreground truncate">{user.email}</p>
-                    </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {users.map((user) => (
+                    <div
+                      key={user.id}
+                      className="group flex items-center gap-3 p-3 border rounded-lg hover:bg-secondary/50 transition-colors cursor-pointer relative"
+                      onClick={() => navigate(`/users/${user.id}`)}
+                    >
+                      <div className="w-10 h-10 bg-gradient-primary rounded-full flex items-center justify-center">
+                        <Users className="w-5 h-5 text-primary-foreground" />
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium truncate">{user.name}</p>
+                        <p className="text-sm text-muted-foreground truncate">{user.email}</p>
+                      </div>
+
+                    {/* ÍCONE DA LIXEIRA (aparece somente no hover) */}
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="default"
+                          size="icon"
+                          className={users.length <= 1 ? "hidden" : "opacity-0 group-hover:opacity-100 transition-opacity absolute right-2"}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <Trash2 className="w-4 h-4 text-white" />
+                        </Button>
+                      </AlertDialogTrigger>
+
+                      <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Remover usuário do grupo?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Esta ação não pode ser desfeita. O usuário será removido do grupo.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => handleRemoveUser(user.id)}>
+                            Remover
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                 ))}
               </div>
