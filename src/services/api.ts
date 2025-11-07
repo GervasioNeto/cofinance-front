@@ -68,10 +68,19 @@ export const api = {
       return response.json();
     },
     
-    addUserToGroup: async (groupId: string, userId: string): Promise<void> => {
-      console.log('Adding user:', userId, 'to group:', groupId);
-      await fetch(`${API_BASE_URL}/groups/${groupId}/users/${userId}`, {
+    // addUserToGroup: async (groupId: string, userId: string): Promise<void> => {
+    //   console.log('Adding user:', userId, 'to group:', groupId);
+    //   await fetch(`${API_BASE_URL}/groups/${groupId}/users/${userId}`, {
+    //     method: 'POST',
+    //   });
+    // },
+
+    addUserToGroupByEmail: async (groupId: string, userEmail: string): Promise<void> => {
+      console.log('Adding user with email:', userEmail, 'to group:', groupId);
+      await fetch(`${API_BASE_URL}/groups/${groupId}/users/email`, {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: userEmail }),
       });
     },
     

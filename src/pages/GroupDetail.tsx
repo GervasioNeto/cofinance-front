@@ -43,7 +43,7 @@ const GroupDetail = () => {
   // Form states
   const [editName, setEditName] = useState('');
   const [editDescription, setEditDescription] = useState('');
-  const [selectedUserId, setSelectedUserId] = useState('');
+  const [selectedUserEmail, setSelectedUserEmail] = useState('');
   const [transactionDescription, setTransactionDescription] = useState('');
   const [transactionAmount, setTransactionAmount] = useState('');
   const [transactionType, setTransactionType] = useState<'expense' | 'income'>('expense');
@@ -127,13 +127,13 @@ const GroupDetail = () => {
   };
   
   const handleAddUser = async () => {
-    if (!groupId || !selectedUserId) return;
+    if (!groupId || !selectedUserEmail) return;
     
     try {
-      await api.groups.addUserToGroup(groupId, selectedUserId);
+      await api.groups.addUserToGroupByEmail(groupId, selectedUserEmail);
       toast.success('Usuário adicionado ao grupo!');
       setIsAddUserDialogOpen(false);
-      setSelectedUserId('');
+      setSelectedUserEmail('');
       loadGroupData();
     } catch (error) {
       toast.error('Erro ao adicionar usuário');
@@ -434,70 +434,22 @@ const GroupDetail = () => {
                   </DialogHeader>
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <Label>Selecione um usuário</Label>
-                      <Select value={selectedUserId} onValueChange={setSelectedUserId}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Escolha um usuário" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {users.map((user) => (
-                        <div
-                          key={user.id}
-                          className="flex items-center gap-3 p-3 border rounded-lg hover:bg-secondary/50 transition-colors"
-                        >
-                          <div
-                            className="flex items-center gap-3 flex-1 cursor-pointer"
-                            onClick={() => navigate(`/users/${user.id}`)}
-                          >
-                            <div className="w-10 h-10 bg-gradient-primary rounded-full flex items-center justify-center">
-                              <Users className="w-5 h-5 text-primary-foreground" />
-                            </div>
-
-                            <div className="flex-1 min-w-0">
-                              <p className="font-medium truncate">{user.name}</p>
-                              <p className="text-sm text-muted-foreground truncate">{user.email}</p>
-                            </div>
-                          </div>
-
-                          {/* botão remover */}
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={(e) => e.stopPropagation()} // impede de abrir o perfil ao clicar no lixo
-                              >
-                                <Trash2 className="w-4 h-4 text-destructive" />
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Remover usuário?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  O usuário será removido permanentemente desse grupo.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={() => handleRemoveUser(user.id)}
-                                >
-                                  Remover
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        </div>
-                      ))}
-                        </SelectContent>
-                      </Select>
+                      <div className="space-y-2">
+                        <Label>E-mail do usuário</Label>
+                        <Input
+                          type="email"
+                          placeholder="Ex: usuario@email.com"
+                          value={selectedUserEmail}
+                          onChange={(e) => setSelectedUserEmail(e.target.value)}
+                          required
+                        />
+                      </div>
                     </div>
                     
                     <Button 
                       onClick={handleAddUser} 
                       className="w-full"
-                      disabled={!selectedUserId}
+                      disabled={!selectedUserEmail}
                     >
                       Adicionar
                     </Button>
