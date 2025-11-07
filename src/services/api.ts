@@ -112,6 +112,13 @@ export const api = {
       });
       return response.json();
     },
+
+    removeUserFromGroup: async (groupId: string, userId: string): Promise<void> => {
+      console.log('Removing user:', userId, 'from group:', groupId);
+      await fetch(`${API_BASE_URL}/groups/${groupId}/users/${userId}`, {
+        method: 'DELETE',
+      });
+    },
     
     delete: async (groupId: string): Promise<void> => {
       console.log('Deleting group:', groupId);
