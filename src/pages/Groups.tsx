@@ -32,25 +32,23 @@ const Groups = () => {
   
   const loadGroups = async () => {
     try {
-    //  const data = await api.groups.getAll();
-      const data = await api.users.getUserGroups(String(currentUser?.id));
-      setGroups(data);
+      const groupsData = await api.users.getUserGroups(String(currentUser?.id));
+
+        const groupsWithTransactions = await Promise.all(
+          groupsData.map(async (group) => {
+          const transactions = await api.groups.getGroupTransactions(group.id);
+          return {
+            ...group,
+            transactions,
+          };
+        })
+      );
+        console.log('Loaded groups with transactions:', groupsWithTransactions);
+      setGroups(groupsWithTransactions);
     } catch (error) {
       toast.error('Erro ao carregar grupos');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const loadGroupId = async (groupId: string) => {
-    try {
-      const data = await api.groups.getGroupById(groupId);
-
-      setGroups(prevGroups => {
-      return prevGroups.map(g => g.id === groupId ? data : g);
-    });
-    } catch (error) {
-      toast.error('Erro ao carregar grupo');
     }
   };
   
