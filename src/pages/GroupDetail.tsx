@@ -29,6 +29,7 @@ const GroupDetail = () => {
   console.log('Initial group state:', group);
   console.log('groupId from params:', groupId);
   console.log(groupId, typeof groupId);
+  console.log('store currentUser:', currentUser); 
   const [users, setUsers] = useState<UserDTO[]>([]);
   const [allUsers, setAllUsers] = useState<UserDTO[]>([]);
   const [transactions, setTransactions] = useState<TransactionDTO[]>([]);
@@ -128,6 +129,17 @@ const GroupDetail = () => {
   
   const handleAddUser = async () => {
     if (!groupId || !selectedUserEmail) return;
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(selectedUserEmail)) {
+    toast.error('Digite um e-mail válido.');
+    return;
+  }
+
+    if(selectedUserEmail === currentUser?.email) {
+      toast.error('Você já é membro deste grupo.');
+      return;
+    }
     
     try {
       await api.groups.addUserToGroupByEmail(groupId, selectedUserEmail);
