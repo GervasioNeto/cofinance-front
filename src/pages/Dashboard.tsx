@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { api } from '@/services/api';
 import { Users, Wallet, TrendingUp, TrendingDown } from 'lucide-react';
 import { toast } from 'sonner';
+import Footer from '@/components/Footer';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -64,6 +65,7 @@ const Dashboard = () => {
   
   return (
     <Layout>
+      <div className="flex flex-col min-h-screen">
       <div className="space-y-8">
         <div>
           <h2 className="text-3xl font-bold mb-2">Dashboard</h2>
@@ -142,20 +144,6 @@ const Dashboard = () => {
           </Card>
         </div>
         
-        <Card>
-          <CardHeader>
-            <CardTitle>Saldo Total</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className={`text-4xl font-bold ${balance >= 0 ? 'text-accent' : 'text-destructive'}`}>
-              R$ {balance.toFixed(2)}
-            </div>
-            <p className="text-sm text-muted-foreground mt-2">
-              {balance >= 0 ? 'Você está no positivo!' : 'Você está no negativo'}
-            </p>
-          </CardContent>
-        </Card>
-        
         {transactions.length > 0 && (
           <Card>
             <CardHeader>
@@ -183,7 +171,10 @@ const Dashboard = () => {
             </CardContent>
           </Card>
         )}
+
       </div>
+        <Footer />
+            </div>
     </Layout>
   );
 };
