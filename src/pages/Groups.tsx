@@ -162,7 +162,7 @@ const Groups = () => {
               <CardContent>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Users className="w-4 h-4" />
-                  <span>{group.users?.length || 0} membros</span>
+                  <span>{group.members?.length || 0} membros</span>
                   <span className="mx-1">•</span>
                   <span>{group.transactions?.length || 0} transações</span>
                 </div>

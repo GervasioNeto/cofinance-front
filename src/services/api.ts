@@ -67,13 +67,13 @@ export const api = {
       const response = await fetch(`${API_BASE_URL}/groups`);
       return response.json();
     },
-    
-    // addUserToGroup: async (groupId: string, userId: string): Promise<void> => {
-    //   console.log('Adding user:', userId, 'to group:', groupId);
-    //   await fetch(`${API_BASE_URL}/groups/${groupId}/users/${userId}`, {
-    //     method: 'POST',
-    //   });
-    // },
+
+    makeAdmin: async (groupId: string, userId: string): Promise<void> => {
+      console.log('Making user:', userId, 'admin of group:', groupId);
+      await fetch(`${API_BASE_URL}/groups/${groupId}/users/${userId}/promote`, {
+        method: 'POST',
+      });
+    },
 
     addUserToGroupByEmail: async (groupId: string, userEmail: string): Promise<void> => {
       console.log('Adding user with email:', userEmail, 'to group:', groupId);
@@ -87,6 +87,12 @@ export const api = {
     getGroupUsers: async (groupId: string): Promise<UserDTO[]> => {
       console.log('Fetching users for group:', groupId);
       const response = await fetch(`${API_BASE_URL}/groups/${groupId}/users`);
+      return response.json();
+    },
+
+    getGroupMembers: async (groupId: string): Promise<UserDTO[]> => {
+      console.log('Fetching users for group members:', groupId);
+      const response = await fetch(`${API_BASE_URL}/groups/${groupId}/members`);
       return response.json();
     },
     

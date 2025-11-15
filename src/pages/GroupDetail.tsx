@@ -13,7 +13,8 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { api } from '@/services/api';
 import { UserDTO, TransactionDTO } from '@/types';
 import { toast } from 'sonner';
-import { Plus, Users, Trash2, Edit, ArrowLeft, UserPlus, TrendingUp, TrendingDown, Copy } from 'lucide-react';
+import { Plus, Users, Trash2, Edit, ArrowLeft, UserPlus, TrendingUp, TrendingDown, Copy, Shield, Crown, AlertTriangle, CircleAlert } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 
 const GroupDetail = () => {
   const { groupId } = useParams();
@@ -30,10 +31,15 @@ const GroupDetail = () => {
   console.log('groupId from params:', groupId);
   console.log(groupId, typeof groupId);
   console.log('store currentUser:', currentUser); 
+
   const [users, setUsers] = useState<UserDTO[]>([]);
   const [allUsers, setAllUsers] = useState<UserDTO[]>([]);
   const [transactions, setTransactions] = useState<TransactionDTO[]>([]);
   const [loading, setLoading] = useState(true);
+  const isAdmin = group?.members?.some(
+    (m) => m.email === currentUser?.email && m.role === "ADMIN"
+  );
+console.log('isAdmin:', isAdmin);
   
   // Dialog states
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -77,6 +83,7 @@ const GroupDetail = () => {
       setTransactions(groupTransactions);
       console.log('groupTransactions:', groupTransactions); 
       setAllUsers(allUsersData);
+      console.log('allUsersData:', allUsersData);
       
       const currentGroup = groups.find(g => g.id === numericGroupId);
       if (currentGroup) {
@@ -171,6 +178,31 @@ const GroupDetail = () => {
       } catch (error) {
         toast.error("Erro ao remover usuário");
       }
+  };
+
+  const handleMakeAdmin = async (userId: string) => {
+  try {
+    await api.groups.makeAdmin(groupId, userId);
+    toast.success("Usuário promovido a administrador!");
+
+    // Atualiza lista de membros
+    loadGroupData();
+  } catch (err) {
+    toast.error("Erro ao promover usuário.");
+  }
+};
+
+  const useGroup = (groupId) => {
+    return useQuery({
+      queryKey: ['group', groupId],
+      queryFn: () => api.groups.getGroupMembers(groupId)
+    });
+  };
+  const { data: members } = useGroup(groupId);
+  const admins = members?.filter(m => m.role === 'ADMIN');
+  const normalMembers = members?.filter(m => m.role !== 'ADMIN');
+  const isUserAdmin = (email) => {
+  return admins?.some(admin => admin.email === email);
   };
   
   const handleCreateTransaction = async (e: React.FormEvent) => {
@@ -316,12 +348,20 @@ const GroupDetail = () => {
           </div>
           
           <div className="flex gap-2">
+            {!isAdmin && (
+              <div className="flex items-center gap-2 rounded-xl bg-yellow-100 text-yellow-800 px-3 py-2 text-sm font-medium border border-yellow-300 shadow-sm">
+                <CircleAlert className="w-5 h-5" />
+                <span>Apenas administradores podem editar grupos e gerenciar transações.</span>
+              </div>
+            )}
             <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
               <DialogTrigger asChild>
+                {isAdmin && (
                 <Button variant="outline" size="sm" className="gap-2">
                   <Edit className="w-4 h-4" />
                   Editar
                 </Button>
+                )}
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
@@ -357,10 +397,12 @@ const GroupDetail = () => {
             
             <AlertDialog>
               <AlertDialogTrigger asChild>
+                {isAdmin && (
                 <Button variant="destructive" size="sm" className="gap-2">
                   <Trash2 className="w-4 h-4" />
                   Excluir
                 </Button>
+                )}
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
@@ -435,10 +477,12 @@ const GroupDetail = () => {
               
               <Dialog open={isAddUserDialogOpen} onOpenChange={setIsAddUserDialogOpen}>
                 <DialogTrigger asChild>
+                  {isAdmin && (
                   <Button size="sm" className="gap-2">
                     <UserPlus className="w-4 h-4" />
                     Adicionar Membro
                   </Button>
+                  )}
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
@@ -484,13 +528,61 @@ const GroupDetail = () => {
                       </div>
 
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium truncate">{user.name}</p>
+                        <p className="font-medium truncate flex items-center gap-1">
+                          {user.name}
+
+                          {isUserAdmin(user.id) && (
+                            <Crown 
+                              className="w-4 h-4 text-yellow-500 shrink-0" 
+                              strokeWidth={2}
+                            />
+                          )}
+                        </p>
                         <p className="text-sm text-muted-foreground truncate">{user.email}</p>
                       </div>
+                       {/* ================================
+                        BOTÃO "TORNAR ADMIN"
+                        - Só aparece para admins
+                        - Não aparece para o próprio admin
+                        - Não aparece se o user já é ADMIN
+                      ================================= */}
+                    {isAdmin && currentUser?.id !== user.id && user.role !== "ADMIN" && (
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="default"
+                            size="icon"
+                            className="opacity-0 group-hover:opacity-100 transition-opacity absolute right-12 mr-1"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <Shield className="w-4 h-4 text-white" /> {/* Ícone de admin */}
+                          </Button>
+                        </AlertDialogTrigger>
+
+                        <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Promover a administrador?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Você deseja conceder privilégios de administrador a <b>{user.name}</b>?
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+
+                            {/* CHAMA A FUNÇÃO */}
+                            <AlertDialogAction onClick={() => handleMakeAdmin(user.id)}>
+                              Confirmar
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    )}
 
                     {/* ÍCONE DA LIXEIRA (aparece somente no hover) */}
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
+                        {isAdmin && (
                         <Button
                           variant="default"
                           size="icon"
@@ -499,6 +591,7 @@ const GroupDetail = () => {
                         >
                           <Trash2 className="w-4 h-4 text-white" />
                         </Button>
+                        )}
                       </AlertDialogTrigger>
 
                       <AlertDialogContent onClick={(e) => e.stopPropagation()}>
@@ -538,10 +631,12 @@ const GroupDetail = () => {
               
               <Dialog open={isTransactionDialogOpen} onOpenChange={setIsTransactionDialogOpen}>
                 <DialogTrigger asChild>
+                  {isAdmin && (
                   <Button size="sm" className="gap-2">
                     <Plus className="w-4 h-4" />
                     Nova Transação
                   </Button>
+                  )}
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
@@ -635,6 +730,7 @@ const GroupDetail = () => {
                         </div>
                         
                         <div className="flex gap-1">
+                          {isAdmin && (
                           <Button
                             variant="ghost"
                             size="icon"
@@ -642,12 +738,15 @@ const GroupDetail = () => {
                           >
                             <Edit className="w-4 h-4" />
                           </Button>
+                          )}
                           
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
+                              {isAdmin && (
                               <Button variant="ghost" size="icon">
                                 <Trash2 className="w-4 h-4" />
                               </Button>
+                              )}
                             </AlertDialogTrigger>
                             <AlertDialogContent>
                               <AlertDialogHeader>
