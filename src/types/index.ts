@@ -9,6 +9,7 @@ export interface UserDTO {
 export interface GroupDTO {
   id: string;
   name: string;
+  uuid: string;
   description?: string;
   createdAt: string;
   users?: UserDTO[];

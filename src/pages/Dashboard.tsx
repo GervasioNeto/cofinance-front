@@ -7,12 +7,16 @@ import { Button } from '@/components/ui/button';
 import { api } from '@/services/api';
 import { Users, Wallet, TrendingUp, TrendingDown } from 'lucide-react';
 import { toast } from 'sonner';
+import Footer from '@/components/Footer';
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const { currentUser, groups, setGroups, transactions, setTransactions } = useStore();
+  const userGroups = currentUser?.groups || [];
   const [loading, setLoading] = useState(true);
   console.log(useStore.getState());
+  console.log('Current User:', currentUser);
+  console.log('User Groups:', userGroups);
   
   useEffect(() => {
     if (!currentUser) {
@@ -61,6 +65,7 @@ const Dashboard = () => {
   
   return (
     <Layout>
+      <div className="flex flex-col min-h-screen">
       <div className="space-y-8">
         <div>
           <h2 className="text-3xl font-bold mb-2">Dashboard</h2>
@@ -78,7 +83,7 @@ const Dashboard = () => {
               <Wallet className="w-4 h-4 text-primary" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{groups.length}</div>
+              <div className="text-2xl font-bold">{userGroups.length}</div>
               <Button
                 variant="link"
                 className="p-0 h-auto text-xs"
@@ -139,20 +144,6 @@ const Dashboard = () => {
           </Card>
         </div>
         
-        <Card>
-          <CardHeader>
-            <CardTitle>Saldo Total</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className={`text-4xl font-bold ${balance >= 0 ? 'text-accent' : 'text-destructive'}`}>
-              R$ {balance.toFixed(2)}
-            </div>
-            <p className="text-sm text-muted-foreground mt-2">
-              {balance >= 0 ? 'Você está no positivo!' : 'Você está no negativo'}
-            </p>
-          </CardContent>
-        </Card>
-        
         {transactions.length > 0 && (
           <Card>
             <CardHeader>
@@ -180,7 +171,10 @@ const Dashboard = () => {
             </CardContent>
           </Card>
         )}
+
       </div>
+        <Footer />
+            </div>
     </Layout>
   );
 };

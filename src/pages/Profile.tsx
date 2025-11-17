@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useStore } from '@/store/useStore';
 import { Layout } from '@/components/Layout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -7,40 +7,49 @@ import { Button } from '@/components/ui/button';
 import { api } from '@/services/api';
 import { UserDTO, GroupDTO, TransactionDTO } from '@/types';
 import { toast } from 'sonner';
-import { ArrowLeft, Mail, Wallet, TrendingUp, TrendingDown } from 'lucide-react';
+import { ArrowLeft, Mail, Wallet, TrendingUp, TrendingDown, Edit } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Label } from '@radix-ui/react-label';
+import { Input } from '@/components/ui/input';
 
-const UserDetail = () => {
-  const { userId } = useParams();
+const UserProfile = () => {
   const navigate = useNavigate();
   const { currentUser } = useStore();
-  const [user, setUser] = useState<UserDTO | null>(null);
-  const [selectedUser, setSelectedUser] = useState<UserDTO | null>(null);
+
+  const [userProfile, setUserProfile] = useState<UserDTO | null>(null);
   const [userGroups, setUserGroups] = useState<GroupDTO[]>([]);
   const [userTransactions, setUserTransactions] = useState<TransactionDTO[]>([]);
   const [loading, setLoading] = useState(true);
-  
+
+  // Estado do diálogo de edição
+const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+
+// Campos do formulário de edição
+const [editName, setEditName] = useState('');
+const [editEmail, setEditEmail] = useState('');
+const [editPassword, setEditPassword] = useState('');
+
   useEffect(() => {
     if (!currentUser) {
       navigate('/login');
       return;
     }
-    if (!userId) {
-      navigate('/users');
-      return;
-    }
     loadUserData();
-  }, [currentUser, userId, navigate]);
-  
+  }, [currentUser, navigate]);
+
   const loadUserData = async () => {
-    if (!userId) return;
-    
+    if (!currentUser) return;
+
     try {
-      const [selectedUser, groups, transactions] = await Promise.all([
-        api.users.getUserById(userId),
-        api.users.getUserGroups(userId),
-        api.users.getUserTransactions(userId),
+      const [profileData, groups, transactions] = await Promise.all([
+        api.users.getUserById(String(currentUser.id)),
+        api.users.getUserGroups(String(currentUser.id)),
+        api.users.getUserTransactions(String(currentUser.id)),
       ]);
-      setSelectedUser(selectedUser)
+
+      setUserProfile(profileData);
+      setEditName(profileData.name);
+setEditEmail(profileData.email);
       setUserGroups(groups);
       setUserTransactions(transactions);
     } catch (error) {
@@ -49,17 +58,43 @@ const UserDetail = () => {
       setLoading(false);
     }
   };
-  
+
+  const handleUpdateUser = async (e: React.FormEvent) => {
+  e.preventDefault();
+  if (!currentUser) return;
+
+  try {
+    const updateData: Record<string, string> = {
+      name: editName,
+      email: editEmail,
+    };
+
+    // Adiciona a senha apenas se for preenchida (não vazia e não nula)
+    if (editPassword && editPassword.trim() !== '') {
+      updateData.password = editPassword;
+    }
+
+    await api.users.update(String(currentUser.id), updateData);
+
+    console.log('dados', editEmail, editName, editPassword);
+    toast.success('Perfil atualizado com sucesso!');
+    setIsEditDialogOpen(false);
+    loadUserData(); // recarrega os dados atualizados
+  } catch (error) {
+    toast.error('Erro ao atualizar perfil');
+  }
+};
+
   const totalExpenses = userTransactions
     .filter(t => t.type === 'expense')
     .reduce((sum, t) => sum + t.amount, 0);
-    
+
   const totalIncome = userTransactions
     .filter(t => t.type === 'income')
     .reduce((sum, t) => sum + t.amount, 0);
-    
+
   const balance = totalIncome - totalExpenses;
-  
+
   if (loading) {
     return (
       <Layout>
@@ -69,38 +104,90 @@ const UserDetail = () => {
       </Layout>
     );
   }
-  
-  if (!selectedUser) {
+
+  if (!userProfile) {
     return (
       <Layout>
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <p className="text-muted-foreground">Usuário não encontrado</p>
-            <Button className="mt-4" onClick={() => navigate('/users')}>
-              Voltar para Usuários
+            <Button className="mt-4" onClick={() => navigate('/')}>
+              Voltar ao Dashboard
             </Button>
           </CardContent>
         </Card>
       </Layout>
     );
   }
-  
+
   return (
     <Layout>
       <div className="space-y-6">
+        {/* Header */}
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/users')}>
+          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
             <ArrowLeft className="w-5 h-5" />
           </Button>
-          <div>
-            <h2 className="text-3xl font-bold">{selectedUser?.name}</h2>
+          <div className="flex flex-col mr-5">
+            <h2 className="text-3xl font-bold">{userProfile.name}</h2>
             <div className="flex items-center gap-2 text-muted-foreground">
               <Mail className="w-4 h-4" />
-              <p>{selectedUser?.email}</p>
+              <p>{userProfile.email}</p>
             </div>
           </div>
-        </div>
-        
+            {/* Botão e Modal de Edição */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogTrigger asChild>
+          <Button variant="outline" size="sm" className="gap-2">
+            <Edit className="w-4 h-4" />
+            Editar Perfil
+          </Button>
+        </DialogTrigger>
+
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Editar Perfil</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleUpdateUser} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-name">Nome</Label>
+              <Input
+                id="edit-name"
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="edit-email">E-mail</Label>
+              <Input
+                id="edit-email"
+                type="email"
+                value={editEmail}
+                onChange={(e) => setEditEmail(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="edit-password">Nova Senha (opcional)</Label>
+              <Input
+                id="edit-password"
+                type="password"
+                value={editPassword}
+                onChange={(e) => setEditPassword(e.target.value)}
+                placeholder="Deixe em branco para manter a atual"
+              />
+            </div>
+
+            <Button type="submit" className="w-full">
+              Salvar Alterações
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </div>
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card>
@@ -116,7 +203,7 @@ const UserDetail = () => {
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -130,7 +217,7 @@ const UserDetail = () => {
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -144,12 +231,12 @@ const UserDetail = () => {
             </CardContent>
           </Card>
         </div>
-        
+
         {/* Groups Section */}
         <Card>
           <CardHeader>
             <CardTitle>Grupos</CardTitle>
-            <CardDescription>{userGroups.length} grupos participando</CardDescription>
+            <CardDescription>{userGroups.length} {userGroups.length === 1 ? 'grupo' : 'grupos'} participando</CardDescription>
           </CardHeader>
           <CardContent>
             {userGroups.length > 0 ? (
@@ -179,12 +266,12 @@ const UserDetail = () => {
             )}
           </CardContent>
         </Card>
-        
+
         {/* Transactions Section */}
         <Card>
           <CardHeader>
             <CardTitle>Transações</CardTitle>
-            <CardDescription>{userTransactions.length} transações realizadas</CardDescription>
+            <CardDescription>{userTransactions.length} {userTransactions.length === 1 ? 'transação' : 'transações'} realizadas</CardDescription>
           </CardHeader>
           <CardContent>
             {userTransactions.length > 0 ? (
@@ -212,7 +299,7 @@ const UserDetail = () => {
                           <span>{new Date(transaction.createdAt).toLocaleDateString('pt-BR')}</span>
                         </div>
                       </div>
-                      
+
                       <div className={`text-lg font-bold ${transaction.type === 'income' ? 'text-accent' : 'text-destructive'}`}>
                         {transaction.type === 'income' ? '+' : '-'} R$ {transaction.amount.toFixed(2)}
                       </div>
@@ -232,4 +319,4 @@ const UserDetail = () => {
   );
 };
 
-export default UserDetail;
+export default UserProfile;

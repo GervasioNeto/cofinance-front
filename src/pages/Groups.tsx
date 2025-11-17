@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { api } from '@/services/api';
 import { toast } from 'sonner';
 import { Plus, Users, Wallet } from 'lucide-react';
-import { GroupDTO } from '@/types';
+import { Copy } from "lucide-react";
 
 const Groups = () => {
   const navigate = useNavigate();
@@ -32,24 +32,23 @@ const Groups = () => {
   
   const loadGroups = async () => {
     try {
-      const data = await api.groups.getAll();
-      setGroups(data);
+      const groupsData = await api.users.getUserGroups(String(currentUser?.id));
+
+        const groupsWithTransactions = await Promise.all(
+          groupsData.map(async (group) => {
+          const transactions = await api.groups.getGroupTransactions(group.id);
+          return {
+            ...group,
+            transactions,
+          };
+        })
+      );
+        console.log('Loaded groups with transactions:', groupsWithTransactions);
+      setGroups(groupsWithTransactions);
     } catch (error) {
       toast.error('Erro ao carregar grupos');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const loadGroupId = async (groupId: string) => {
-    try {
-      const data = await api.groups.getGroupById(groupId);
-
-      setGroups(prevGroups => {
-      return prevGroups.map(g => g.id === groupId ? data : g);
-    });
-    } catch (error) {
-      toast.error('Erro ao carregar grupo');
     }
   };
   
@@ -163,9 +162,23 @@ const Groups = () => {
               <CardContent>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Users className="w-4 h-4" />
-                  <span>{group.users?.length || 0} membros</span>
+                  <span>{group.members?.length || 0} membros</span>
                   <span className="mx-1">•</span>
                   <span>{group.transactions?.length || 0} transações</span>
+                </div>
+                <div className="text-xs flex items-center gap-1 text-muted-foreground mt-2">
+                <span>{group.uuid}</span>
+                  <button 
+                       onClick={(e) => {
+                        e.stopPropagation(); // para o evento não subir para o card
+                        navigator.clipboard.writeText(group.uuid);
+                        toast.success('Identificador do grupo copiado!');
+                      }}
+                    className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                    title="Copiar UUID"
+                  >
+                    <Copy className="w-4 h-4" />
+                  </button>
                 </div>
               </CardContent>
             </Card>
