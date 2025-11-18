@@ -94,7 +94,19 @@ const Groups = () => {
               Gerencie seus grupos de despesas
             </p>
           </div>
-          
+            <div className="flex items-center gap-3">
+
+              {/* 🔍 Botão "Pesquisar Grupo" */}
+              <Button 
+                variant="outline" 
+                className="gap-2"
+                onClick={() => navigate('/groups/search')}
+              >
+                <Users className="w-4 h-4" />
+                Pesquisar
+              </Button>
+
+              {/* 🟢 Botão já existente de Criar Grupo */}
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
               <Button className="gap-2">
@@ -135,6 +147,7 @@ const Groups = () => {
               </form>
             </DialogContent>
           </Dialog>
+        </div>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
