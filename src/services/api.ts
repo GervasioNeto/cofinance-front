@@ -108,6 +108,13 @@ export const api = {
       if (!response.ok) throw new Error('Erro ao buscar grupo');
       return response.json();
     },
+
+    search: async (term: string): Promise<GroupDTO[]> => {
+      console.log("Searching groups:", term);
+      const response = await fetch(`${API_BASE_URL}/groups/busca?q=${encodeURIComponent(term)}`);
+      if (!response.ok) throw new Error('Erro ao buscar grupos');
+      return response.json();
+    },
     
     update: async (groupId: string, data: Partial<CreateGroupDTO>): Promise<GroupDTO> => {
       console.log('Updating group:', groupId, 'with data:', data);
