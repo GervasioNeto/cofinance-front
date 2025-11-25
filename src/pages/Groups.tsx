@@ -12,6 +12,7 @@ import { api } from '@/services/api';
 import { toast } from 'sonner';
 import { Plus, Users, Wallet } from 'lucide-react';
 import { Copy } from "lucide-react";
+import { DateRangeFilter } from '@/components/DateRangeFilter';
 
 const Groups = () => {
   const navigate = useNavigate();
@@ -73,6 +74,32 @@ const Groups = () => {
       setCreating(false);
     }
   };
+
+const handleFilterByDate = async (start, end) => {
+  try {
+    const s = start.toISOString().split("T")[0];
+    const e = end.toISOString().split("T")[0];
+
+    const filteredGroups = await api.groups.searchByDateRange(s, e);
+
+    const groupsWithData = await Promise.all(
+      filteredGroups.map(async (group) => {
+        const transactions = await api.groups.getGroupTransactions(group.id);
+        const members = await api.groups.getGroupMembers(group.id);
+
+        return {
+          ...group,
+          transactions,
+          members,
+        };
+      })
+    );
+
+    setGroups(groupsWithData);
+  } catch (error) {
+    toast.error("Erro ao filtrar grupos");
+  }
+};
   
   if (loading) {
     return (
@@ -95,7 +122,9 @@ const Groups = () => {
             </p>
           </div>
             <div className="flex items-center gap-3">
-
+                      <div className="">
+  <DateRangeFilter onSelectRange={handleFilterByDate} />
+</div>
               {/* 🔍 Botão "Pesquisar Grupo" */}
               <Button 
                 variant="outline" 

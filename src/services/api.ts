@@ -115,6 +115,18 @@ export const api = {
       if (!response.ok) throw new Error('Erro ao buscar grupos');
       return response.json();
     },
+
+    searchByDateRange: async (start: string, end: string) => {
+      const startDateTime = `${start}T00:00:00`;
+      const endDateTime = `${end}T23:59:59`;
+
+      const response = await fetch(
+        `${API_BASE_URL}/groups/search/date?start=${startDateTime}&end=${endDateTime}`
+      );
+
+      if (!response.ok) throw new Error('Erro ao filtrar grupos por data');
+      return response.json();
+    },
     
     update: async (groupId: string, data: Partial<CreateGroupDTO>): Promise<GroupDTO> => {
       console.log('Updating group:', groupId, 'with data:', data);
