@@ -80,7 +80,7 @@ const handleFilterByDate = async (start, end) => {
     const s = start.toISOString().split("T")[0];
     const e = end.toISOString().split("T")[0];
 
-    const filteredGroups = await api.groups.searchByDateRange(s, e);
+    const filteredGroups = await api.groups.searchByDateRange(s, e, currentUser.id);
 
     const groupsWithData = await Promise.all(
       filteredGroups.map(async (group) => {
