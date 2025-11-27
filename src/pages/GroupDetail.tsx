@@ -206,6 +206,8 @@ console.log('isAdmin:', isAdmin);
   };
   
   const handleCreateTransaction = async (e: React.FormEvent) => {
+    const today = new Date();
+    const localDate = today.toLocaleDateString("en-CA");
     e.preventDefault();
     if (!groupId || !currentUser) return;
     
@@ -219,6 +221,7 @@ console.log('isAdmin:', isAdmin);
         userId: currentUser.id,
         type: transactionType,
         category: transactionCategory,
+        date: localDate,
       });
       
       toast.success('Transação criada com sucesso!');
