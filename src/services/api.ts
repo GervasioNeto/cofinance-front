@@ -15,7 +15,18 @@ export const api = {
       return response.json();
     },
 
-      getUserById: async (userId: string): Promise<UserDTO> => {
+    login: async (credentials: { email: string; password: string }): Promise<UserDTO> => {
+      console.log('Logging in with credentials:', credentials);
+      const response = await fetch(`${API_BASE_URL}/users/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(credentials),
+      });
+      if (!response.ok) throw new Error('Erro ao fazer login');
+      return response.json();
+    },
+
+    getUserById: async (userId: string): Promise<UserDTO> => {
       console.log('Fetching user by ID:', userId);
       const response = await fetch(`${API_BASE_URL}/users/${userId}`);
       return response.json();
