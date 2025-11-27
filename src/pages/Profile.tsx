@@ -59,7 +59,7 @@ setEditEmail(profileData.email);
     }
   };
 
-  const handleUpdateUser = async (e: React.FormEvent) => {
+const handleUpdateUser = async (e: React.FormEvent) => {
   e.preventDefault();
   if (!currentUser) return;
 
@@ -69,17 +69,17 @@ setEditEmail(profileData.email);
       email: editEmail,
     };
 
-    // Adiciona a senha apenas se for preenchida (não vazia e não nula)
     if (editPassword && editPassword.trim() !== '') {
       updateData.password = editPassword;
     }
 
     await api.users.update(String(currentUser.id), updateData);
 
-    console.log('dados', editEmail, editName, editPassword);
-    toast.success('Perfil atualizado com sucesso!');
-    setIsEditDialogOpen(false);
-    loadUserData(); // recarrega os dados atualizados
+    toast.success('Perfil atualizado com sucesso! Por favor, faça login novamente.');
+
+    // Limpa o usuário logado
+    useStore.getState().logout(); // ou qualquer método que você tenha no store para limpar currentUser
+    navigate('/login'); // redireciona para a tela de login
   } catch (error) {
     toast.error('Erro ao atualizar perfil');
   }
